@@ -1,8 +1,0 @@
-cd - change dir
-ls - list files
-rem - remove files
-kill - kill proces
-touch - make file
-find - find files
-file - show file type
-nano - text editor

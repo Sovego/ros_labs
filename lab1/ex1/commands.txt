@@ -1,0 +1,9 @@
+cd - change dir
+ls - list files
+rm - remove files
+touch - change file timestamp
+find - find files
+file - show file type
+nano - text editor
+whatis - short desciption of program
+sudo - give root access
