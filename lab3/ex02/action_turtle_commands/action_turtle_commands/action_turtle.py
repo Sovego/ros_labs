@@ -1,75 +1,70 @@
-import time  # BAD ONE
-from math import pi as m_pi
+import time
+import math
 
 import rclpy
 from rclpy.action import ActionServer
 from rclpy.node import Node
-
 from geometry_msgs.msg import Twist
+from turtle_action.action import ExecuteTurtleCommand
 
-from ex02_turtle_action.action import ExecuteTurtleCommand
 
-
-class TurtleAction(Node):
+class MessageTurtleActionServer(Node):
 
     def __init__(self):
-        super().__init__("turtle_action_server")
-        self.odometer = 0
-
-        self._cmd_vel_pub = self.create_publisher(Twist, "turtle1/cmd_vel", 10)
+        super().__init__('message_turtle_action_server')
         self._action_server = ActionServer(
             self,
             ExecuteTurtleCommand,
-            'ExecuteTurtleCommand',
-            self.execute_callback
-        )
+            'messageturtle',
+            self.execute_callback)
+        self.publisher_ = self.create_publisher(Twist, 'turtle1/cmd_vel', 1)
 
     def execute_callback(self, goal_handle):
-        self.get_logger().info(f"Accepted goal cmd: {goal_handle.request.cmd}")
-
-        cmd_vel_msg = Twist()
+        self.get_logger().info('Executing goal...')
+        command = goal_handle.request.command
+        s = goal_handle.request.s
+        angle = goal_handle.request.angle
+        message = Twist()
+        self.publisher_.publish(message)
 
         feedback_msg = ExecuteTurtleCommand.Feedback()
-        feedback_msg.odom = self.odometer
+        feedback_msg.odom = 0
 
-        cmd = goal_handle.request.cmd
-
-        if (cmd == "forward"):
-            cmd_vel_msg.linear.x = 1.
+        if command == "forward":
+            self.get_logger().info('Goal: forward, {0} metres '.format(goal_handle.request.s))
             for i in range(goal_handle.request.s):
-                self._cmd_vel_pub.publish(cmd_vel_msg)
-                self.odometer += 1
-                feedback_msg.odom = self.odometer
-                self._cmd_vel_pub.publish(cmd_vel_msg)
+                feedback_msg.odom += 1
+                message.linear.x += 1.0
+                self.publisher_.publish(message)
+                self.get_logger().info('Feedback: {0} metres'.format(feedback_msg.odom))
                 goal_handle.publish_feedback(feedback_msg)
-                time.sleep(0.5)
-        elif (cmd == "turn_right"):
-            cmd_vel_msg.angular.z = -1.0
-            self._cmd_vel_pub.publish(cmd_vel_msg)
+                time.sleep(1)
+        elif command == "turn_right":
+            self.get_logger().info('Goal: turn right, {0} degrees '.format(goal_handle.request.angle))
+            message.angular.z = - angle * math.pi / 180.0  # 1.57 radians = 90 degrees
+            self.publisher_.publish(message)
+            self.get_logger().info('Feedback: {0} metres'.format(feedback_msg.odom))
             goal_handle.publish_feedback(feedback_msg)
-        elif (cmd == "turn_left"):
-            cmd_vel_msg.angular.z = 1.0
-            self._cmd_vel_pub.publish(cmd_vel_msg)
+            time.sleep(1)
+        else:
+            self.get_logger().info('Goal: turn left, {0} degrees '.format(goal_handle.request.angle))
+            message.angular.z = angle * math.pi / 180.0
+            self.publisher_.publish(message)
+            self.get_logger().info('Feedback: {0} metres'.format(feedback_msg.odom))
             goal_handle.publish_feedback(feedback_msg)
+            time.sleep(1)
 
         goal_handle.succeed()
-
         result = ExecuteTurtleCommand.Result()
         result.result = True
         return result
 
 
-def main():
-    rclpy.init()
-
-    ta = TurtleAction()
-
-    rclpy.spin(ta)
-
-    ta.destroy_node()
-
-    rclpy.shutdown()
+def main(args=None):
+    rclpy.init(args=args)
+    message_turtle_action_server = MessageTurtleActionServer()
+    rclpy.spin(message_turtle_action_server)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

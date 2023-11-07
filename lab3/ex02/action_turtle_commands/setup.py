@@ -20,8 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "server = ex02_action_turtle_commands.action_turtle:main",
-            "client = ex02_action_turtle_commands.client_turtle:main",
+            "server = action_turtle_commands.action_turtle:main",
+            "client = action_turtle_commands.client_turtle:main",
         ],
     },
 )
