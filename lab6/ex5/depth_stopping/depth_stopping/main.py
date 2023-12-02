@@ -33,17 +33,12 @@ class Turtle(Node):
                 y = int(center_y + 0.8 * center_y * np.sin(angle))
                 points.append((x, y))
             average_point = (int(np.mean([point[0] for point in points])), int(np.mean([point[1] for point in points])))
-            pixel_values = []
-            for point in points:
-                pixel_values.append(image[point[1], point[0]])
+            pixel_values = [image[point[1], point[0]] for point in points]
             average_pixel_value = np.mean(pixel_values, axis=0)
             #center_color = image[int(self.msg.width*self.msg.height/2+self.msg.width/2)]
             self.get_logger().info('dist {0} '.format(average_pixel_value))
-       
-            if(average_pixel_value<=1.0):
-                message.linear.x = 0.0
-            else:
-                message.linear.x = 0.1
+
+            message.linear.x = 0.0 if (average_pixel_value<=1.0) else 0.1
             message.angular.z = 0.0
             self.publisher_.publish(message)    
 

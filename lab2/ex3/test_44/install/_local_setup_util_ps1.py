@@ -43,9 +43,7 @@ def main(argv=sys.argv[1:]):  # noqa: D103
     ordered_packages = order_packages(packages)
     for pkg_name in ordered_packages:
         if _include_comments():
-            print(
-                FORMAT_STR_COMMENT_LINE.format_map(
-                    {'comment': 'Package: ' + pkg_name}))
+            print(FORMAT_STR_COMMENT_LINE.format_map({'comment': f'Package: {pkg_name}'}))
         prefix = os.path.abspath(os.path.dirname(__file__))
         if not args.merged_install:
             prefix = os.path.join(prefix, pkg_name)
@@ -99,7 +97,7 @@ def get_packages(prefix_path, merged_install):
 
     # remove unknown dependencies
     pkg_names = set(packages.keys())
-    for k in packages.keys():
+    for k in packages:
         packages[k] = {d for d in packages[k] if d in pkg_names}
 
     return packages
@@ -231,7 +229,7 @@ def process_dsv_file(
     for basename, extensions in basenames.items():
         if not os.path.isabs(basename):
             basename = os.path.join(prefix, basename)
-        if os.path.exists(basename + '.dsv'):
+        if os.path.exists(f'{basename}.dsv'):
             extensions.add('dsv')
 
     for basename, extensions in basenames.items():
@@ -240,20 +238,31 @@ def process_dsv_file(
         if 'dsv' in extensions:
             # process dsv files recursively
             commands += process_dsv_file(
-                basename + '.dsv', prefix, primary_extension=primary_extension,
-                additional_extension=additional_extension)
+                f'{basename}.dsv',
+                prefix,
+                primary_extension=primary_extension,
+                additional_extension=additional_extension,
+            )
         elif primary_extension in extensions and len(extensions) == 1:
             # source primary-only files
             commands += [
-                FORMAT_STR_INVOKE_SCRIPT.format_map({
-                    'prefix': prefix,
-                    'script_path': basename + '.' + primary_extension})]
+                FORMAT_STR_INVOKE_SCRIPT.format_map(
+                    {
+                        'prefix': prefix,
+                        'script_path': f'{basename}.{primary_extension}',
+                    }
+                )
+            ]
         elif additional_extension in extensions:
             # source non-primary files
             commands += [
-                FORMAT_STR_INVOKE_SCRIPT.format_map({
-                    'prefix': prefix,
-                    'script_path': basename + '.' + additional_extension})]
+                FORMAT_STR_INVOKE_SCRIPT.format_map(
+                    {
+                        'prefix': prefix,
+                        'script_path': f'{basename}.{additional_extension}',
+                    }
+                )
+            ]
 
     return commands
 
@@ -308,8 +317,7 @@ def handle_dsv_types_except_source(type_, remainder, prefix):
             else:
                 commands += _prepend_unique_value(env_name, value)
     else:
-        raise RuntimeError(
-            'contains an unknown environment hook type: ' + type_)
+        raise RuntimeError(f'contains an unknown environment hook type: {type_}')
     return commands
 
 
@@ -331,10 +339,10 @@ def _append_unique_value(name, value):
         {'name': name, 'value': extend + value})
     if value not in env_state[name]:
         env_state[name].add(value)
-    else:
-        if not _include_comments():
-            return []
+    elif _include_comments():
         line = FORMAT_STR_COMMENT_LINE.format_map({'comment': line})
+    else:
+        return []
     return [line]
 
 
@@ -353,10 +361,10 @@ def _prepend_unique_value(name, value):
         {'name': name, 'value': value + extend})
     if value not in env_state[name]:
         env_state[name].add(value)
-    else:
-        if not _include_comments():
-            return []
+    elif _include_comments():
         line = FORMAT_STR_COMMENT_LINE.format_map({'comment': line})
+    else:
+        return []
     return [line]
 
 
@@ -399,6 +407,6 @@ if __name__ == '__main__':  # pragma: no cover
     try:
         rc = main()
     except RuntimeError as e:
-        print(str(e), file=sys.stderr)
+        print(e, file=sys.stderr)
         rc = 1
     sys.exit(rc)
