@@ -54,13 +54,10 @@ class FrameListener(Node):
         self.timer = self.create_timer(1.0, self.on_timer)
 
     def on_timer(self):
-        # Store frame names in variables that will be used to
-        # compute transformations
-        from_frame_rel = self.target_frame
-        to_frame_rel = 'turtle2'
-
         if self.turtle_spawning_service_ready:
             if self.turtle_spawned:
+                from_frame_rel = self.target_frame
+                to_frame_rel = 'turtle2'
                 # Look up for the transformation between target_frame and turtle2 frames
                 # and send velocity commands for turtle2 to reach target_frame
                 try:
@@ -93,28 +90,26 @@ class FrameListener(Node):
                     t.transform.translation.y ** 2)
 
                 self.publisher.publish(msg)
+            elif self.result.done():
+                self.get_logger().info(
+                    f'Successfully spawned {self.result.result().name}')
+                self.turtle_spawned = True
             else:
-                if self.result.done():
-                    self.get_logger().info(
-                        f'Successfully spawned {self.result.result().name}')
-                    self.turtle_spawned = True
-                else:
-                    self.get_logger().info('Spawn is not finished')
+                self.get_logger().info('Spawn is not finished')
+        elif self.spawner.service_is_ready():
+            # Initialize request with turtle name and coordinates
+            # Note that x, y and theta are defined as floats in turtlesim/srv/Spawn
+            request = Spawn.Request()
+            request.name = 'turtle2'
+            request.x = 4.0
+            request.y = 2.0
+            request.theta = 0.0
+            # Call request
+            self.result = self.spawner.call_async(request)
+            self.turtle_spawning_service_ready = True
         else:
-            if self.spawner.service_is_ready():
-                # Initialize request with turtle name and coordinates
-                # Note that x, y and theta are defined as floats in turtlesim/srv/Spawn
-                request = Spawn.Request()
-                request.name = 'turtle2'
-                request.x = 4.0
-                request.y = 2.0
-                request.theta = 0.0
-                # Call request
-                self.result = self.spawner.call_async(request)
-                self.turtle_spawning_service_ready = True
-            else:
-                # Check if the service is ready
-                self.get_logger().info('Service is not ready')
+            # Check if the service is ready
+            self.get_logger().info('Service is not ready')
 
 
 def main():

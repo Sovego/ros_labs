@@ -17,7 +17,7 @@ class MinimalPublisher(Node):
         message = Twist()
         message.angular.z = -2.0
         message.linear.x = 5.0
-        self.get_logger().info('Next moving: %s' % (message))
+        self.get_logger().info(f'Next moving: {message}')
         self.publisher_.publish(message)
 
 

@@ -24,7 +24,7 @@ class Turtle(Node):
     def go_forward(self):
         message = Twist()
         check = 1
-   
+
         for i in range(len(self.msg.ranges)):
             if(self.msg.ranges[i] < self.msg.range_min and self.msg.ranges[i] > self.msg.range_max):
                 continue
@@ -33,11 +33,7 @@ class Turtle(Node):
                 check = 0
                 break
 
-        if(check):
-            message.linear.x = 0.1
-        else:
-            message.linear.x = 0.0
-            
+        message.linear.x = 0.1 if check else 0.0
         self.publisher_.publish(message)             
 
 def main(args=None):

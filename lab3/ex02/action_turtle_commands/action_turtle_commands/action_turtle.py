@@ -32,7 +32,7 @@ class MessageTurtleActionServer(Node):
 
         if command == "forward":
             self.get_logger().info('Goal: forward, {0} metres '.format(goal_handle.request.s))
-            for i in range(goal_handle.request.s):
+            for _ in range(goal_handle.request.s):
                 feedback_msg.odom += 1
                 message.linear.x += 1.0
                 self.publisher_.publish(message)

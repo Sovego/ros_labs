@@ -28,18 +28,18 @@ class MinimalPublisher(Node):
         self.get_logger().info("Succesfully create node")
 
     def callback(self, msg: String):
-        self.get_logger().info("Get message from cmd_text: %s" % msg.data)
+        self.get_logger().info(f"Get message from cmd_text: {msg.data}")
         string_msg = msg.data
         turtle_msg = geometry_msgs.msg.Twist()
-        if string_msg == "turn_right":
-            turtle_msg.angular.z = -1.5
-        elif string_msg == "turn_left":
-            turtle_msg.angular.z = 1.5
-        elif string_msg == "move_forward":
-            turtle_msg.linear.x = 1.0
-        elif string_msg == "move_backward":
+        if string_msg == "move_backward":
             turtle_msg.linear.x = -1.0
 
+        elif string_msg == "move_forward":
+            turtle_msg.linear.x = 1.0
+        elif string_msg == "turn_left":
+            turtle_msg.angular.z = 1.5
+        elif string_msg == "turn_right":
+            turtle_msg.angular.z = -1.5
         self.publisher_.publish(turtle_msg)
         self.get_logger().info(f'Publishing: "{turtle_msg.angular.z}" "{turtle_msg.linear.x}" ')
 
